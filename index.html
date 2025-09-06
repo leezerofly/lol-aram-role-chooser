@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <title>英雄联盟大乱斗选角器</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="all-title">英雄联盟大乱斗选角器 <span id="helpIcon" class="help-icon">?</span></h1>
+    
+    <!-- 房间系统 -->
+    <div class="room-section">
+      <div class="room-controls">
+        <div class="room-input-group">
+          <input type="text" id="roomIdInput" placeholder="输入房间号" maxlength="6">
+          <button id="joinRoomBtn">加入房间（成员）</button>
+        </div>
+        <div class="room-actions">
+          <button id="createRoomBtn">创建房间（房主）</button>
+        </div>
+      </div>
+      <div class="room-info" id="roomInfo" style="display: none;">
+        <span>房间号: <strong id="currentRoomId"></strong></span>
+        <span class="room-status">等待其他玩家加入...</span>
+        <div class="room-actions">
+          <button id="restartBtn" class="restart-btn" style="display: none;">重新开始</button>
+          <button id="leaveRoomBtn" class="leave-room-btn">退出房间</button>
+        </div>
+      </div>
+      <div class="players-info" id="playersInfo" style="display: none;">
+        <div class="ready-section">
+          <button id="readyBtn" disabled>准备</button>
+          <span class="ready-status" id="readyStatus">等待其他玩家...</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="teams-container" id="teamsContainer">
+      <div class="team blue">
+        <h2>已生成可选阵容</h2>
+        <div class="champions" id="blueTeam"></div>
+      </div>
+      <div class="team red">
+        <h2>已生成可选阵容</h2>
+        <div class="champions" id="redTeam"></div>
+      </div>
+    </div>
+    <div class="history-container">
+      <div class="history-header">
+        <h2>历史记录</h2>
+        <div class="admin-login">
+          <input type="password" id="adminPassword" placeholder="管理员密码" maxlength="20">
+          <button id="adminLoginBtn">验证</button>
+        </div>
+      </div>
+      <div id="historyRecords" style="display: none;">
+        <div id="historyList"></div>
+        <div id="pagination" class="pagination" style="display: none;">
+          <button id="prevPage" class="page-btn">上一页</button>
+          <span id="pageInfo" class="page-info"></span>
+          <button id="nextPage" class="page-btn">下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 帮助弹窗 -->
+  <div id="helpModal" class="help-modal">
+    <div class="help-modal-content">
+      <div class="help-modal-header">
+        <h2>使用说明</h2>
+        <span id="closeHelpModal" class="close-help-modal">&times;</span>
+      </div>
+      <div class="help-modal-body">
+        <div id="helpContent">
+          <!-- 规则说明内容将在这里显示 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
