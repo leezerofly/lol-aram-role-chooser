@@ -31,7 +31,7 @@ db.serialize(() => {
     room_id TEXT NOT NULL,
     blue_team TEXT NOT NULL,
     red_team TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT (datetime('now', '+8 hours'))
   )`);
 });
 
@@ -564,9 +564,9 @@ async function generateMatch(roomId) {
       image: c.image.full
     }));
     
-    // 保存到数据库
+    // 保存到数据库（使用 UTC-8 时区）
     db.run(
-      'INSERT INTO matches (uuid, room_id, blue_team, red_team) VALUES (?, ?, ?, ?)',
+      'INSERT INTO matches (uuid, room_id, blue_team, red_team, created_at) VALUES (?, ?, ?, ?, datetime("now", "-8 hours"))',
       [matchUuid, roomId, JSON.stringify(room.blueTeam), JSON.stringify(room.redTeam)],
       function(err) {
         if (err) {
@@ -610,7 +610,7 @@ async function generateMatch(roomId) {
 }
 
 // 启动服务器
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
   console.log(`服务器运行在端口 ${PORT}`);
   console.log(`访问地址: http://localhost:${PORT}`);

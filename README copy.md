@@ -17,7 +17,7 @@
 ### 方法1：使用启动脚本（推荐）
 1. 双击运行 `start.bat`
 2. 等待依赖安装完成
-3. 服务器启动后访问 `http://localhost:3000`
+3. 服务器启动后访问 `http://localhost:4000`
 
 ### 方法2：手动安装
 ```bash
@@ -89,7 +89,7 @@ Response: { success: true, match: {...} }
 
 - 确保网络连接正常，需要访问英雄联盟官方API
 - 建议使用现代浏览器（Chrome, Firefox, Safari, Edge）
-- 服务器默认运行在3000端口，可在server.js中修改
+- 服务器默认运行在4000端口，可在server.js中修改
 
 ## 开发说明
 

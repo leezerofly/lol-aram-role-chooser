@@ -665,7 +665,7 @@ function startReconnect() {
     
     socket.connect();
     reconnectAttempts++;
-  }, 3000);
+  }, 4000);
 }
 
 // 退出房间
@@ -917,8 +917,16 @@ function displayHistoryFromServer(matches) {
         const hasRedTeam = record.redTeam && record.redTeam.length > 0;
         const isComplete = hasBlueTeam && hasRedTeam;
         
-        // 格式化时间
-        const createdAt = new Date(record.createdAt).toLocaleString();
+        // 格式化时间（显示 UTC-8 时区）
+        const createdAt = new Date(record.createdAt).toLocaleString('zh-CN', {
+          timeZone: 'Asia/Shanghai',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
         
         return `
         <div class="history-record" style="animation-delay: ${index * 0.1}s">
@@ -1027,5 +1035,5 @@ function showNotification(message, type = 'info') {
         document.body.removeChild(notification);
       }
     }, 300);
-  }, 3000);
+  }, 4000);
 }
