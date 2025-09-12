@@ -564,9 +564,9 @@ async function generateMatch(roomId) {
       image: c.image.full
     }));
     
-    // 保存到数据库（使用 UTC-8 时区）
+    // 保存到数据库（使用 UTC+8 时区）
     db.run(
-      'INSERT INTO matches (uuid, room_id, blue_team, red_team, created_at) VALUES (?, ?, ?, ?, datetime("now", "-8 hours"))',
+      'INSERT INTO matches (uuid, room_id, blue_team, red_team, created_at) VALUES (?, ?, ?, ?, datetime("now", "+8 hours"))',
       [matchUuid, roomId, JSON.stringify(room.blueTeam), JSON.stringify(room.redTeam)],
       function(err) {
         if (err) {
