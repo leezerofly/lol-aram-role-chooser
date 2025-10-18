@@ -1,9 +1,10 @@
-const API_VERSION = "15.17.1";
-const DDRAGON_BASE_URL = `https://ddragon.leagueoflegends.com/cdn/${API_VERSION}`;
-
 // 服务端连接
 const socket = io();
 const API_BASE = window.location.origin;
+
+// 动态获取版本号
+let API_VERSION = "15.17.1"; // 默认版本
+let DDRAGON_BASE_URL = `https://ddragon.leagueoflegends.com/cdn/${API_VERSION}`;
 
 // 全局变量
 let currentRoomId = null;
@@ -24,8 +25,26 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeApp();
 });
 
+// 获取服务端版本号
+async function fetchVersion() {
+  try {
+    const response = await fetch(`${API_BASE}/api/version`);
+    const data = await response.json();
+    if (data.success && data.version) {
+      API_VERSION = data.version;
+      DDRAGON_BASE_URL = `https://ddragon.leagueoflegends.com/cdn/${API_VERSION}`;
+      console.log(`✓ 使用英雄联盟数据版本: ${API_VERSION}`);
+    }
+  } catch (error) {
+    console.error('⚠ 获取版本号失败，使用默认版本:', API_VERSION);
+  }
+}
+
 // 初始化应用
-function initializeApp() {
+async function initializeApp() {
+  // 先获取版本号
+  await fetchVersion();
+  
   // 绑定事件
   document.getElementById("createRoomBtn").addEventListener("click", createRoom);
   document.getElementById("joinRoomBtn").addEventListener("click", joinRoom);

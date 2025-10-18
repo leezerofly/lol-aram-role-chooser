@@ -61,15 +61,31 @@ const players = new Map();
 
 // 英雄数据缓存
 let championsData = null;
+let LATEST_VERSION = '15.17.1'; // 默认版本
+
+// 获取最新版本
+async function fetchLatestVersion() {
+  try {
+    const response = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+    const versions = await response.json();
+    LATEST_VERSION = versions[0]; // 第一个就是最新版本
+    console.log(`✓ 当前使用的英雄联盟数据版本: ${LATEST_VERSION}`);
+    return LATEST_VERSION;
+  } catch (error) {
+    console.error('⚠ 获取最新版本失败，使用默认版本:', LATEST_VERSION, error);
+    return LATEST_VERSION;
+  }
+}
 
 // 获取英雄数据
 async function getChampions() {
   if (championsData) return championsData;
   
   try {
-    const response = await fetch('https://ddragon.leagueoflegends.com/cdn/13.9.1/data/zh_CN/champion.json');
+    const response = await fetch(`https://ddragon.leagueoflegends.com/cdn/${LATEST_VERSION}/data/zh_CN/champion.json`);
     const data = await response.json();
     championsData = Object.values(data.data);
+    console.log(`✓ 成功加载 ${championsData.length} 个英雄数据`);
     return championsData;
   } catch (error) {
     console.error('获取英雄数据失败:', error);
@@ -229,6 +245,14 @@ app.get('/api/history', (req, res) => {
         });
       }
     );
+  });
+});
+
+// 获取当前使用的版本
+app.get('/api/version', (req, res) => {
+  res.json({
+    success: true,
+    version: LATEST_VERSION
   });
 });
 
@@ -635,9 +659,34 @@ async function generateMatch(roomId) {
   }
 }
 
+// 初始化服务器
+async function initializeServer() {
+  console.log('正在初始化服务器...');
+  
+  // 获取最新版本
+  await fetchLatestVersion();
+  
+  // 预加载英雄数据
+  console.log('正在加载英雄数据...');
+  const champions = await getChampions();
+  if (champions.length === 0) {
+    console.error('⚠ 警告：英雄数据加载失败，服务可能无法正常工作');
+  }
+  
+  // 启动服务器
+  const PORT = process.env.PORT || 4000;
+  server.listen(PORT, () => {
+    console.log(`========================================`);
+    console.log(`✓ 服务器运行在端口 ${PORT}`);
+    console.log(`✓ 访问地址: http://localhost:${PORT}`);
+    console.log(`✓ 英雄联盟数据版本: ${LATEST_VERSION}`);
+    console.log(`✓ 已加载英雄数量: ${championsData ? championsData.length : 0}`);
+    console.log(`========================================`);
+  });
+}
+
 // 启动服务器
-const PORT = process.env.PORT || 4000;
-server.listen(PORT, () => {
-  console.log(`服务器运行在端口 ${PORT}`);
-  console.log(`访问地址: http://localhost:${PORT}`);
+initializeServer().catch(error => {
+  console.error('服务器初始化失败:', error);
+  process.exit(1);
 });
