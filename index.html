@@ -19,11 +19,15 @@
           <button id="joinRoomBtn">加入房间（成员）</button>
         </div>
         <div class="room-actions">
-          <button id="createRoomBtn">创建房间（房主）</button>
+          <input type="text" id="roomNameInput" placeholder="输入房间名（必填）" maxlength="50" required>
+          <button id="createRoomBtn" disabled>创建房间（房主）</button>
         </div>
       </div>
       <div class="room-info" id="roomInfo" style="display: none;">
-        <span>房间号: <strong id="currentRoomId"></strong></span>
+        <div class="room-details">
+          <span>房间号: <strong id="currentRoomId"></strong></span>
+          <span class="room-name-display">房间名: <strong id="currentRoomName"></strong></span>
+        </div>
         <span class="room-status">等待其他玩家加入...</span>
         <div class="room-actions">
           <button id="restartBtn" class="restart-btn" style="display: none;">重新开始</button>

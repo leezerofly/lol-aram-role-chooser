@@ -29,10 +29,30 @@ db.serialize(() => {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     uuid TEXT UNIQUE NOT NULL,
     room_id TEXT NOT NULL,
+    room_name TEXT DEFAULT '未命名房间',
     blue_team TEXT NOT NULL,
     red_team TEXT NOT NULL,
     created_at DATETIME DEFAULT (datetime('now', '+8 hours'))
   )`);
+  
+  // 检查并添加room_name列（如果表已存在但没有该列）
+  db.all("PRAGMA table_info(matches)", (err, rows) => {
+    if (err) {
+      console.error('检查表结构失败:', err);
+      return;
+    }
+    
+    const hasRoomName = rows.some(row => row.name === 'room_name');
+    if (!hasRoomName) {
+      db.run("ALTER TABLE matches ADD COLUMN room_name TEXT DEFAULT '未命名房间'", (err) => {
+        if (err) {
+          console.error('添加room_name列失败:', err);
+        } else {
+          console.log('已成功添加room_name列到matches表');
+        }
+      });
+    }
+  });
 });
 
 // 存储房间和玩家信息
@@ -65,9 +85,11 @@ function getRandomChampions(champions, count) {
 
 // 创建房间
 app.post('/api/create-room', (req, res) => {
+  const { roomName } = req.body;
   const roomId = generateRoomId();
   const room = {
     id: roomId,
+    name: roomName || '未命名房间',
     creator: null,
     players: new Map(),
     status: 'waiting', // waiting, ready, generated
@@ -81,6 +103,7 @@ app.post('/api/create-room', (req, res) => {
   res.json({
     success: true,
     roomId: roomId,
+    roomName: room.name,
     message: '房间创建成功'
   });
 });
@@ -115,6 +138,7 @@ app.post('/api/join-room', (req, res) => {
   res.json({
     success: true,
     message: '成功加入房间',
+    roomName: room.name || '未命名房间',
     roomStatus: room.status,
     playerCount: room.players.size + 1
   });
@@ -144,6 +168,7 @@ app.get('/api/match/:uuid', (req, res) => {
       match: {
         uuid: row.uuid,
         roomId: row.room_id,
+        roomName: row.room_name || '未命名房间',
         blueTeam: JSON.parse(row.blue_team),
         redTeam: JSON.parse(row.red_team),
         createdAt: row.created_at
@@ -184,6 +209,7 @@ app.get('/api/history', (req, res) => {
         const matches = rows.map(row => ({
           uuid: row.uuid,
           roomId: row.room_id,
+          roomName: row.room_name || '未命名房间',
           blueTeam: JSON.parse(row.blue_team),
           redTeam: JSON.parse(row.red_team),
           createdAt: row.created_at
@@ -566,8 +592,8 @@ async function generateMatch(roomId) {
     
     // 保存到数据库（使用 UTC+8 时区）
     db.run(
-      'INSERT INTO matches (uuid, room_id, blue_team, red_team, created_at) VALUES (?, ?, ?, ?, datetime("now", "+8 hours"))',
-      [matchUuid, roomId, JSON.stringify(room.blueTeam), JSON.stringify(room.redTeam)],
+      'INSERT INTO matches (uuid, room_id, room_name, blue_team, red_team, created_at) VALUES (?, ?, ?, ?, ?, datetime("now", "+8 hours"))',
+      [matchUuid, roomId, room.name || '未命名房间', JSON.stringify(room.blueTeam), JSON.stringify(room.redTeam)],
       function(err) {
         if (err) {
           console.error('保存比赛记录失败:', err);

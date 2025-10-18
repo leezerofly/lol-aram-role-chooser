@@ -188,6 +188,26 @@ h1 {
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
+#roomNameInput {
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 200px;
+  transition: all 0.2s;
+}
+
+#roomNameInput:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+#roomNameInput:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
 .room-actions {
   display: flex;
   gap: 10px;
@@ -215,9 +235,17 @@ h1 {
   color: white;
 }
 
-#createRoomBtn:hover {
+#createRoomBtn:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+}
+
+#createRoomBtn:disabled {
+  background: linear-gradient(135deg, #ccc 0%, #999 100%);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
 }
 
 #joinRoomBtn {
@@ -246,6 +274,30 @@ h1 {
   background: #f8f9fa;
   border-radius: 8px;
   border-left: 4px solid #4caf50;
+}
+
+.room-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 60%;
+}
+
+.room-name-display {
+  color: inherit;
+  font-size: 0.95em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-name-display strong {
+  display: inline-block;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
 }
 
 .room-status {
@@ -676,6 +728,23 @@ h1 {
   margin-right: 10px;
 }
 
+.room-name-badge {
+  color: #2196f3;
+  font-size: 0.9em;
+  font-weight: bold;
+  background: #e3f2fd;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-right: 10px;
+  border: 1px solid #90caf9;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .partial-badge {
   color: #ff9800;
   font-size: 0.8em;
@@ -834,6 +903,18 @@ h1 {
 
   .history-record li {
     font-size: 0.85em;
+  }
+  
+  .room-details {
+    max-width: 50%;
+  }
+  
+  .room-name-display strong {
+    max-width: 150px;
+  }
+  
+  .room-name-badge {
+    max-width: 120px;
   }
 }
 

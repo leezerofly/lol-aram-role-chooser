@@ -7,6 +7,7 @@ const API_BASE = window.location.origin;
 
 // 全局变量
 let currentRoomId = null;
+let currentRoomName = null;
 let isRoomCreator = false;
 let isReady = false;
 let matchUuid = null;
@@ -41,6 +42,21 @@ function initializeApp() {
   document.getElementById("roomIdInput").addEventListener("keypress", (e) => {
     if (e.key === 'Enter') {
       joinRoom();
+    }
+  });
+  
+  // 房间名输入框监听，控制创建按钮状态
+  const roomNameInput = document.getElementById("roomNameInput");
+  const createRoomBtn = document.getElementById("createRoomBtn");
+  
+  roomNameInput.addEventListener("input", (e) => {
+    const roomName = e.target.value.trim();
+    createRoomBtn.disabled = roomName.length === 0;
+  });
+  
+  roomNameInput.addEventListener("keypress", (e) => {
+    if (e.key === 'Enter' && e.target.value.trim().length > 0) {
+      createRoom();
     }
   });
   
@@ -167,17 +183,29 @@ function setupSocketListeners() {
 // 创建房间
 async function createRoom() {
   try {
+    const roomName = document.getElementById('roomNameInput').value.trim();
+    
+    // 验证房间名不为空
+    if (!roomName) {
+      showNotification('请填写房间名', 'error');
+      return;
+    }
+    
     const response = await fetch(`${API_BASE}/api/create-room`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({
+        roomName: roomName
+      })
     });
     
     const data = await response.json();
     
     if (data.success) {
       currentRoomId = data.roomId;
+      currentRoomName = data.roomName;
       isRoomCreator = true;
       currentTeam = 'blue';
       
@@ -229,6 +257,7 @@ async function joinRoom() {
     
     if (data.success) {
       currentRoomId = roomId;
+      currentRoomName = data.roomName;
       isRoomCreator = false;
       currentTeam = 'red';
       
@@ -261,10 +290,14 @@ function updateRoomUI() {
   const roomInfo = document.getElementById('roomInfo');
   const playersInfo = document.getElementById('playersInfo');
   const currentRoomIdSpan = document.getElementById('currentRoomId');
+  const currentRoomNameSpan = document.getElementById('currentRoomName');
   const roomStatus = document.querySelector('.room-status');
   const readyBtn = document.getElementById('readyBtn');
   
   currentRoomIdSpan.textContent = currentRoomId;
+  if (currentRoomName) {
+    currentRoomNameSpan.textContent = currentRoomName;
+  }
   roomInfo.style.display = 'flex';
   playersInfo.style.display = 'block';
   
@@ -443,6 +476,7 @@ function saveRoomState() {
   if (currentRoomId) {
     const roomState = {
       roomId: currentRoomId,
+      roomName: currentRoomName,
       isCreator: isRoomCreator,
       team: currentTeam,
       isReady: isReady,
@@ -464,6 +498,7 @@ function checkSavedRoomState() {
       
       if (roomState.roomId) {
         currentRoomId = roomState.roomId;
+        currentRoomName = roomState.roomName;
         isRoomCreator = roomState.isCreator;
         currentTeam = roomState.team;
         isReady = roomState.isReady;
@@ -471,6 +506,7 @@ function checkSavedRoomState() {
         
         console.log('恢复的状态:', {
           currentRoomId,
+          currentRoomName,
           isRoomCreator,
           currentTeam,
           isReady,
@@ -680,6 +716,7 @@ function leaveRoom() {
   
   // 清理状态
   currentRoomId = null;
+  currentRoomName = null;
   isRoomCreator = false;
   isReady = false;
   matchUuid = null;
@@ -755,6 +792,10 @@ function resetUI() {
   
   // 清空输入框
   document.getElementById('roomIdInput').value = '';
+  document.getElementById('roomNameInput').value = '';
+  
+  // 重置创建房间按钮为禁用状态
+  document.getElementById('createRoomBtn').disabled = true;
   
   // 重置准备按钮
   document.getElementById('readyBtn').disabled = true;
@@ -772,6 +813,7 @@ function resetUI() {
   
   // 清空全局状态变量
   currentRoomId = null;
+  currentRoomName = null;
   isRoomCreator = false;
   isReady = false;
   matchUuid = null;
@@ -812,7 +854,7 @@ function showHelpModal() {
   content.innerHTML = `
     <h3>使用说明</h3>
     <ul>
-      <li>A同学创建房间后，将房间号发给B同学，B同学加入房间后，双方可点击"准备"按钮</li>
+      <li>A同学输入房间名并创建房间后，将房间号发给B同学，B同学加入房间后，双方可点击"准备"按钮</li>
       <li>双方都准备后，系统自动为每方随机生成15个不同的英雄，进游戏后，双方需要自己选择其中的5个英雄</li>
       <li>打完一局后点重新开始按钮即可</li>
     </ul>
@@ -821,7 +863,7 @@ function showHelpModal() {
     <ul>
       <li>为了模拟大乱斗真实场景，双方看不到对方的可选列表。避免针对性选英雄</li>
       <li>为了避免纠纷，最好打完后就双方互发图片验证下对面是否按照可选英雄选择了</li>
-      <li>每场比赛会生成一个UUID，用于记录和查询，请妥善保存。遇到英雄池纠纷可以向主办方查询</li>
+      <li>每场比赛会生成一个UUID，用于记录和查询，请妥善保存。遇到英雄池纠纷可以使用uuid向主办方查询（若未留存uuid，也可使用房间名查询）</li>
       <li>为了避免意料之外的bug，尽量按上面正常流程走。加入房间后尽量不再刷新页面之类</li>
       <li>若出现bug，可以跟对手商量，退出房间重新创建</li>
     </ul>
@@ -932,6 +974,7 @@ function displayHistoryFromServer(matches) {
         <div class="history-record" style="animation-delay: ${index * 0.1}s">
             <div class="record-header">
                 <div class="header-left">
+                    <span class="room-name-badge">${record.roomName || '未命名房间'}</span>
                     <span class="timestamp">${createdAt}</span>
                     <span class="match-uuid">UUID: ${record.uuid}</span>
                     <span class="complete-badge">完整数据</span>
